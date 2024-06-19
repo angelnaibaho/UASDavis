@@ -1,0 +1,14 @@
+streamlit
+pandas
+plotly
+streamlit-option-menu
+matplotlib
+prophet
+yfinance
+pandas-datareader
+numpy
+datetime
+openpyxl
+pymysql
+SQLAlchemy
+scipy
