@@ -1,5 +1,12 @@
 streamlit
+option_menu
 pandas
+plotly.express
+mysql.connector
+create_engine
+matplotlib.pyplot
+
+
 plotly
 streamlit-option-menu
 matplotlib
