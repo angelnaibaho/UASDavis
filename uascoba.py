@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 def fetch_data_from_db(query):
     try:
         # Membuat koneksi ke database menggunakan SQLAlchemy
-        db_connection_str = 'https://github.com/angelnaibaho/UASDavis/blob/main/database_aw.sql'
+        db_connection_str = 'mysql+mysqlconnector://root:@localhost/aw'
         db_connection = create_engine(db_connection_str)
 
         # Membaca data dari database
