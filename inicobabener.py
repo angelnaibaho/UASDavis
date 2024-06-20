@@ -63,11 +63,15 @@ def plot_bubble_chart(data):
 def main():
     st.title("Sales Dashboard")
     
+    # Sidebar menu
+    with st.sidebar:
+        selected_option = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'], 
+                                      icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
+        
     # Year selection using selectbox
     selected_year = st.selectbox("Select Year", options=[2001, 2002, 2003, 2004])
 
-    # If Grafik is selected
-    if st.sidebar.option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'], icons=['film', 'book', 'chart'], menu_icon="house", default_index=0) == 'Grafik':
+    if selected_option == 'Grafik':
         st.write("""# GRAFIK""")
         
         # Query to fetch data based on selected year
