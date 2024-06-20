@@ -6,18 +6,15 @@ import mysql.connector as mysqlcon
 from sqlalchemy import create_engine
 import matplotlib.pyplot as plt
 
-def fetch_data_from_db(query):
-    try:
-        # Membuat koneksi ke database menggunakan SQLAlchemy
-        db_connection_str = 'mysql+mysqlconnector://root:@localhost/aw'
-        db_connection = create_engine(db_connection_str)
-
-        # Membaca data dari database
-        data = pd.read_sql(query, db_connection)
-        return data
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-        return None
+# Function to create a connection to the database
+def create_connection():
+    return mysql.connector.connect(
+        host="kubela.id",
+        user="davis2024irwan",
+        passwd="wh451n9m@ch1n3",
+        port=3306,  
+        database="aw"
+    )
 
 def plot_histogram(data):
     # Pivot data
