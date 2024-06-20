@@ -29,7 +29,6 @@ def fetch_data_from_db(query):
         return None
 
 def plot_histogram(data):
-    # Pastikan data memiliki kolom 'Product Category', 'Gender', dan 'Quantity'
     pivot_data = data.pivot(index='Product Category', columns='Gender', values='Quantity')
 
     plt.style.use('dark_background')
@@ -52,7 +51,6 @@ def plot_histogram(data):
     return fig
 
 def plot_bubble_chart(data):
-    # Pastikan data memiliki kolom 'SalesTerritoryRegion' dan 'CustomerCount'
     sizes = data['CustomerCount'] * 20
 
     plt.style.use('dark_background')
@@ -79,26 +77,22 @@ if selected == 'Grafik':
     year = st.selectbox("Select Year", options=[2001, 2002, 2003, 2004], index=0)
     
     st.write("""# GRAFIK""")
-    query = f"""
+    query = """
     SELECT 
-        CASE 
-            WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 30 AND 39 THEN '30-39'
-            WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 40 AND 49 THEN '40-49'
-            WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 50 AND 59 THEN '50-59'
-            WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 60 AND 69 THEN '60-69'
-            WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 70 AND 79 THEN '70-79'
-            WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 80 AND 89 THEN '80-89'
-            WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 90 AND 99 THEN '90-99'
-            WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) >= 100 THEN '100+'
-            ELSE 'Unknown'
-        END AS AgeGroup,
-        COUNT(dc.CustomerKey) AS Number_of_Customers
+        dpc.EnglishProductCategoryName AS `Product Category`, 
+        gen.Gender AS Gender,
+        COUNT(fs.OrderQuantity) AS Quantity 
     FROM 
-        dimcustomer dc
+        factinternetsales fs 
+    JOIN dimproduct dp ON dp.ProductKey = fs.ProductKey 
+    JOIN dimproductsubcategory dsc ON dp.ProductSubcategoryKey = dsc.ProductSubcategoryKey 
+    JOIN dimproductcategory dpc ON dsc.ProductCategoryKey = dpc.ProductCategoryKey 
+    JOIN dimcustomer gen ON fs.CustomerKey = gen.CustomerKey
     GROUP BY 
-        AgeGroup
+        dpc.EnglishProductCategoryName,
+        gen.Gender
     ORDER BY 
-        MIN(ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365));
+        Quantity;
     """
     data = fetch_data_from_db(query)
     if data is not None:
@@ -111,16 +105,24 @@ if selected == 'Grafik':
         with col2:
             query_bubble = """
             SELECT 
-                dimsalesterritory.SalesTerritoryRegion,  
-                COUNT(dimcustomer.CustomerKey) AS CustomerCount 
-            FROM  
-                dimgeography 
-            JOIN dimcustomer ON dimgeography.GeographyKey = dimcustomer.GeographyKey 
-            JOIN dimsalesterritory ON dimgeography.SalesTerritoryKey = dimsalesterritory.SalesTerritoryKey
-            GROUP BY   
-                dimgeography.SalesTerritoryKey, dimsalesterritory.SalesTerritoryRegion
-            ORDER BY  
-                CustomerCount;
+    CASE 
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 30 AND 39 THEN '30-39'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 40 AND 49 THEN '40-49'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 50 AND 59 THEN '50-59'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 60 AND 69 THEN '60-69'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 70 AND 79 THEN '70-79'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 80 AND 89 THEN '80-89'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 90 AND 99 THEN '90-99'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) >= 100 THEN '100+'
+        ELSE 'Unknown'
+    END AS AgeGroup,
+    COUNT(dc.CustomerKey) AS Number_of_Customers
+FROM 
+    dimcustomer dc
+GROUP BY 
+    AgeGroup
+ORDER BY 
+    MIN(ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365));
             """
             data_bubble = fetch_data_from_db(query_bubble)
             if data_bubble is not None:
