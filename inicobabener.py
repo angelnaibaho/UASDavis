@@ -64,7 +64,7 @@ if selected == 'Grafik':
     SELECT 
         dpc.EnglishProductCategoryName AS `Product Category`, 
         gen.Gender AS Gender,
-        COUNT(fs.OrderQuantity) AS Quanti
+        COUNT(fs.OrderQuantity) AS Quantity
     FROM 
         factinternetsales fs 
     JOIN dimproduct dp ON dp.ProductKey = fs.ProductKey 
