@@ -66,19 +66,18 @@ def plot_bubble_chart(data):
 
     return fig
 
-# Sidebar with navigation
+# nav sidebar
 with st.sidebar:
     selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'],
-                           icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
+        icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
 
-# Main content
+# Grafik
 if selected == 'Grafik':
     # Year selection above the "GRAFIK" heading
     year = st.selectbox("Select Year", options=[2012, 2013, 2014, 2015], index=0)
-
+    
     st.write("""# GRAFIK""")
-
-    query = f"""
+    query = """
     SELECT 
         dpc.EnglishProductCategoryName AS `Product Category`, 
         gen.Gender AS Gender,
@@ -89,8 +88,6 @@ if selected == 'Grafik':
     JOIN dimproductsubcategory dsc ON dp.ProductSubcategoryKey = dsc.ProductSubcategoryKey 
     JOIN dimproductcategory dpc ON dsc.ProductCategoryKey = dpc.ProductCategoryKey 
     JOIN dimcustomer gen ON fs.CustomerKey = gen.CustomerKey
-    WHERE 
-        LEFT(fs.OrderDateKey, 4) = '{year}'
     GROUP BY 
         dpc.EnglishProductCategoryName,
         gen.Gender
@@ -106,7 +103,7 @@ if selected == 'Grafik':
             st.pyplot(fig1)
 
         with col2:
-            query_bubble = f"""
+            query_bubble = """
             SELECT 
                 dimsalesterritory.SalesTerritoryRegion,  
                 COUNT(dimcustomer.CustomerKey) AS CustomerCount 
@@ -114,8 +111,6 @@ if selected == 'Grafik':
                 dimgeography 
             JOIN dimcustomer ON dimgeography.GeographyKey = dimcustomer.GeographyKey 
             JOIN dimsalesterritory ON dimgeography.SalesTerritoryKey = dimsalesterritory.SalesTerritoryKey
-            WHERE 
-                LEFT(dimcustomer.DateFirstPurchaseKey, 4) = '{year}'
             GROUP BY   
                 dimgeography.SalesTerritoryKey, dimsalesterritory.SalesTerritoryRegion
             ORDER BY  
