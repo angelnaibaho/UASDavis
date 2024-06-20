@@ -29,6 +29,7 @@ def fetch_data_from_db(query):
         return None
 
 def plot_histogram(data):
+    # Pivot the data to make it suitable for a grouped bar chart
     pivot_data = data.pivot(index='Product Category', columns='Gender', values='Quantity').reset_index()
     fig = px.bar(pivot_data, 
                  x='Product Category', 
@@ -49,18 +50,17 @@ def plot_bubble_chart(data):
     fig.update_layout(xaxis_title='Sales Territory Region', yaxis_title='Customer Count')
     return fig
 
-# nav sidebar
+# Navigation sidebar
 with st.sidebar:
     selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'],
         icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
 
 # Grafik
 if selected == 'Grafik':
-    # # Year selection above the "GRAFIK" heading
-    # year = st.selectbox("Select Year", options=[2001, 2002, 2003, 2004], index=0)
-    
     st.write("""# GRAFIK""")
-    query = """
+    
+    # Query for the histogram
+    query_histogram = """
     SELECT 
         dpc.EnglishProductCategoryName AS `Product Category`, 
         gen.Gender AS Gender,
@@ -77,15 +77,16 @@ if selected == 'Grafik':
     ORDER BY 
         Quantity;
     """
-    data = fetch_data_from_db(query)
-    if data is not None:
+    data_histogram = fetch_data_from_db(query_histogram)
+    if data_histogram is not None:
         col1, col2 = st.columns(2)
         
         with col1:
-            fig1 = plot_histogram(data)
+            fig1 = plot_histogram(data_histogram)
             st.plotly_chart(fig1)
 
         with col2:
+            # Query for the bubble chart
             query_bubble = """
             SELECT 
                 dimsalesterritory.SalesTerritoryRegion,  
@@ -103,3 +104,7 @@ if selected == 'Grafik':
             if data_bubble is not None:
                 fig2 = plot_bubble_chart(data_bubble)
                 st.plotly_chart(fig2)
+
+# Book Scrap (Additional functionality placeholder)
+if selected == 'Book Scrap':
+    st.write("Book Scrap functionality not implemented yet.")
