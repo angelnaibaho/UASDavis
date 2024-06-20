@@ -66,6 +66,25 @@ def plot_bubble_chart(data):
 
     return fig
 
+# Query SQL untuk mengambil data jumlah pesanan berdasarkan bulan
+query_monthly_orders = """
+    SELECT 
+        month.EnglishMonthName,  
+        COUNT(fs.OrderQuantity) AS Quantity
+    FROM  
+        dimtime AS month
+    JOIN 
+        factinternetsales AS fs ON month.TimeKey = fs.OrderDateKey 
+    WHERE 
+        month.CalendarYear BETWEEN 2003 AND 2004
+    GROUP BY   
+        month.EnglishMonthName
+    ORDER BY  
+        FIELD(month.EnglishMonthName,
+            'January', 'February', 'March', 'April', 'May', 'June', 
+            'July', 'August', 'September', 'October', 'November', 'December');
+"""
+
 # nav sidebar
 with st.sidebar:
     selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'],
@@ -75,46 +94,76 @@ with st.sidebar:
 if selected == 'Grafik':
     
     st.write("""# GRAFIK""")
-    query = """
-    SELECT 
-        dpc.EnglishProductCategoryName AS `Product Category`, 
-        gen.Gender AS Gender,
-        COUNT(fs.OrderQuantity) AS Quantity 
-    FROM 
-        factinternetsales fs 
-    JOIN dimproduct dp ON dp.ProductKey = fs.ProductKey 
-    JOIN dimproductsubcategory dsc ON dp.ProductSubcategoryKey = dsc.ProductSubcategoryKey 
-    JOIN dimproductcategory dpc ON dsc.ProductCategoryKey = dpc.ProductCategoryKey 
-    JOIN dimcustomer gen ON fs.CustomerKey = gen.CustomerKey
-    GROUP BY 
-        dpc.EnglishProductCategoryName,
-        gen.Gender
-    ORDER BY 
-        Quantity;
+    
+    # Fetch data for histogram
+    query_histogram = """
+        SELECT 
+            dpc.EnglishProductCategoryName AS `Product Category`, 
+            gen.Gender AS Gender,
+            COUNT(fs.OrderQuantity) AS Quantity 
+        FROM 
+            factinternetsales fs 
+        JOIN dimproduct dp ON dp.ProductKey = fs.ProductKey 
+        JOIN dimproductsubcategory dsc ON dp.ProductSubcategoryKey = dsc.ProductSubcategoryKey 
+        JOIN dimproductcategory dpc ON dsc.ProductCategoryKey = dpc.ProductCategoryKey 
+        JOIN dimcustomer gen ON fs.CustomerKey = gen.CustomerKey
+        GROUP BY 
+            dpc.EnglishProductCategoryName,
+            gen.Gender
+        ORDER BY 
+            Quantity;
     """
-    data = fetch_data_from_db(query)
-    if data is not None:
+    data_histogram = fetch_data_from_db(query_histogram)
+    if data_histogram is not None:
         col1, col2 = st.columns(2)
         
         with col1:
-            fig1 = plot_histogram(data)
+            fig1 = plot_histogram(data_histogram)
             st.pyplot(fig1)
 
         with col2:
+            # Fetch data for bubble chart
             query_bubble = """
-            SELECT 
-                dimsalesterritory.SalesTerritoryRegion,  
-                COUNT(dimcustomer.CustomerKey) AS CustomerCount 
-            FROM  
-                dimgeography 
-            JOIN dimcustomer ON dimgeography.GeographyKey = dimcustomer.GeographyKey 
-            JOIN dimsalesterritory ON dimgeography.SalesTerritoryKey = dimsalesterritory.SalesTerritoryKey
-            GROUP BY   
-                dimgeography.SalesTerritoryKey, dimsalesterritory.SalesTerritoryRegion
-            ORDER BY  
-                CustomerCount;
+                SELECT 
+                    dimsalesterritory.SalesTerritoryRegion,  
+                    COUNT(dimcustomer.CustomerKey) AS CustomerCount 
+                FROM  
+                    dimgeography 
+                JOIN dimcustomer ON dimgeography.GeographyKey = dimcustomer.GeographyKey 
+                JOIN dimsalesterritory ON dimgeography.SalesTerritoryKey = dimsalesterritory.SalesTerritoryKey
+                GROUP BY   
+                    dimgeography.SalesTerritoryKey, dimsalesterritory.SalesTerritoryRegion
+                ORDER BY  
+                    CustomerCount;
             """
             data_bubble = fetch_data_from_db(query_bubble)
             if data_bubble is not None:
                 fig2 = plot_bubble_chart(data_bubble)
                 st.pyplot(fig2)
+
+        # Plot line chart for monthly orders
+        try:
+            data_monthly_orders = pd.read_sql(query_monthly_orders, create_connection())
+            
+            # Mengatur ukuran gambar
+            plt.figure(figsize=(12, 8))
+            
+            # Plotting line chart
+            plt.plot(data_monthly_orders['EnglishMonthName'], data_monthly_orders['Quantity'], marker='o')
+
+            # Menambahkan judul
+            plt.title('Order Quantity by Month (Line Chart)')
+
+            # Menambahkan label sumbu x dan y
+            plt.xlabel('Month')
+            plt.ylabel('Order Quantity')
+
+            # Memutar label sumbu x agar tidak bertabrakan
+            plt.xticks(rotation=45)
+
+            # Menampilkan plot
+            plt.tight_layout()
+            st.pyplot(plt)
+
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
