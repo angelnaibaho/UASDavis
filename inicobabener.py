@@ -1,135 +1,270 @@
-import streamlit as st
-from streamlit_option_menu import option_menu
+import mysql.connector
 import pandas as pd
-import mysql.connector as mysqlcon
-import matplotlib.pyplot as plt
+import streamlit as st
+import plotly.express as px
+import plotly.graph_objects as go
 
 # Function to create a connection to the database
 def create_connection():
-    return mysqlcon.connect(
+    return mysql.connector.connect(
         host="kubela.id",
         user="davis2024irwan",
         passwd="wh451n9m@ch1n3",
-        port=3306,
+        port=3306,  
         database="aw"
     )
 
-# Function to fetch data from the database based on a given query
-def fetch_data_from_db(query):
-    try:
-        conn = create_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute(query)
-        data = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        return pd.DataFrame(data)
-    except mysqlcon.Error as e:
-        st.error(f"Error fetching data: {e}")
-        return None
+# Function to fetch data based on selected country
+def fetch_data(country=None):
+    dataBase = create_connection()
+    cursor = dataBase.cursor()
 
-# Function to plot histogram based on fetched data
-def plot_histogram(data):
-    pivot_data = data.pivot(index='Product Category', columns='Gender', values='Quantity')
-    plt.style.use('dark_background')
-    fig, ax = plt.subplots(figsize=(10, 6))
-    pivot_data.plot(kind='bar', ax=ax)
-    ax.set_title("Total Quantity by Product Category and Gender", color='white')
-    ax.set_xlabel('Product Category', color='white')
-    ax.set_ylabel('Total Quantity', color='white')
-    ax.legend(title='Gender', facecolor='black', edgecolor='white', loc='upper right')
-    ax.set_facecolor('black')
-    fig.patch.set_facecolor('black')
-    fig.patch.set_edgecolor('white')
-    ax.tick_params(colors='white', which='both')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    return fig
-
-# Function to plot bubble chart based on fetched data
-def plot_bubble_chart(data):
-    sizes = data['CustomerCount'] * 20
-    plt.style.use('dark_background')
-    fig, ax = plt.subplots(figsize=(12, 8))
-    scatter = ax.scatter(data['SalesTerritoryRegion'], data['CustomerCount'], s=sizes, alpha=0.5)
-    ax.set_title("Customer Count by Sales Territory Region (Bubble Plot)", color='white')
-    ax.set_xlabel('Sales Territory Region', color='white')
-    ax.set_ylabel('Customer Count', color='white')
-    plt.xticks(rotation=90)
-    plt.tight_layout()
-    return fig
-
-# Streamlit app code
-def main():
-    st.title("Sales Dashboard")
+    # Query to fetch data
+    base_query = """
+    SELECT dc.YearlyIncome, SUM(fis.SalesAmount) as TotalSales
+    FROM factinternetsales fis
+    JOIN dimcustomer dc ON fis.CustomerKey = dc.CustomerKey
+    JOIN dimsalesterritory dst ON fis.SalesTerritoryKey = dst.SalesTerritoryKey
+    {}
+    GROUP BY dc.YearlyIncome
+    """
     
-    # Sidebar menu
-    with st.sidebar:
-        selected_option = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'], 
-                                      icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
-        
-    # Year selection using selectbox
-    selected_year = st.selectbox("Select Year", options=[2001, 2002, 2003, 2004])
+    if country:
+        query = base_query.format(f"WHERE dst.SalesTerritoryCountry = '{country}'")
+    else:
+        query = base_query.format("")
 
-    if selected_option == 'Grafik':
-        st.write("""# GRAFIK""")
-        
-        # Query to fetch data based on selected year
-        query_histogram = f"""
-        SELECT 
-            dpc.EnglishProductCategoryName AS `Product Category`, 
-            gen.Gender AS Gender,
-            COUNT(fs.OrderQuantity) AS Quantity 
-        FROM 
-            factinternetsales fs 
-        JOIN dimtime dt ON fs.OrderDateKey = dt.TimeKey
-        JOIN dimproduct dp ON dp.ProductKey = fs.ProductKey 
-        JOIN dimproductsubcategory dsc ON dp.ProductSubcategoryKey = dsc.ProductSubcategoryKey 
-        JOIN dimproductcategory dpc ON dsc.ProductCategoryKey = dpc.ProductCategoryKey 
-        JOIN dimcustomer gen ON fs.CustomerKey = gen.CustomerKey
-        WHERE 
-            dt.CalendarYear = {selected_year}  -- Filter based on selected year
-        GROUP BY 
-            dpc.EnglishProductCategoryName,
-            gen.Gender
-        ORDER BY 
-            Quantity;
-        """
-        
-        # Fetch data for histogram
-        data_histogram = fetch_data_from_db(query_histogram)
-        
-        if data_histogram is not None:
-            col1, col2 = st.columns(2)
+    cursor.execute(query)
+    data = pd.DataFrame(cursor.fetchall(), columns=['YearlyIncome', 'TotalSales'])
 
-            with col1:
-                # Plot histogram
-                fig1 = plot_histogram(data_histogram)
-                st.pyplot(fig1)
+    cursor.close()
+    dataBase.close()
+    
+    return data
 
-            with col2:
-                # Query for bubble chart
-                query_bubble = f"""
-                SELECT 
-                    dimsalesterritory.SalesTerritoryRegion,  
-                    COUNT(dimcustomer.CustomerKey) AS CustomerCount 
-                FROM  
-                    dimgeography 
-                JOIN dimcustomer ON dimgeography.GeographyKey = dimcustomer.GeographyKey 
-                JOIN dimsalesterritory ON dimgeography.SalesTerritoryKey = dimsalesterritory.SalesTerritoryKey
-                WHERE
-                    YEAR(dimcustomer.BirthDate) = {selected_year}  -- Filter based on selected year if applicable
-                GROUP BY   
-                    dimgeography.SalesTerritoryKey, dimsalesterritory.SalesTerritoryRegion
-                ORDER BY  
-                    CustomerCount;
-                """
-                # Fetch data for bubble chart
-                data_bubble = fetch_data_from_db(query_bubble)
-                if data_bubble is not None:
-                    fig2 = plot_bubble_chart(data_bubble)
-                    st.pyplot(fig2)
+# Function to fetch available countries
+def fetch_countries():
+    dataBase = create_connection()
+    cursor = dataBase.cursor()
+    
+    cursor.execute("SELECT DISTINCT SalesTerritoryCountry FROM dimsalesterritory")
+    countries = [row[0] for row in cursor.fetchall()]
+    
+    cursor.close()
+    dataBase.close()
+    
+    return countries
 
-# Main function to run the Streamlit app
-if __name__ == "__main__":
-    main()
+# Function to fetch sales data per product category by sales territory
+def fetch_sales_data(country=None):
+    dataBase = create_connection()
+    cursor = dataBase.cursor()
+
+    base_query = """
+    SELECT dst.SalesTerritoryRegion, dpc.EnglishProductCategoryName, SUM(fis.SalesAmount) AS TotalSales
+    FROM factinternetsales fis
+    JOIN dimsalesterritory dst ON fis.SalesTerritoryKey = dst.SalesTerritoryKey
+    JOIN dimproduct dp ON fis.ProductKey = dp.ProductKey
+    JOIN dimproductsubcategory dps ON dp.ProductSubcategoryKey = dps.ProductSubcategoryKey
+    JOIN dimproductcategory dpc ON dps.ProductCategoryKey = dpc.ProductCategoryKey
+    {}
+    GROUP BY dst.SalesTerritoryRegion, dpc.EnglishProductCategoryName;
+    """
+    
+    if country:
+        query = base_query.format(f"WHERE dst.SalesTerritoryCountry = '{country}'")
+    else:
+        query = base_query.format("")
+
+    cursor.execute(query)
+    data = pd.DataFrame(cursor.fetchall(), columns=['SalesTerritoryRegion', 'ProductCategory', 'TotalSales'])
+
+    cursor.close()
+    dataBase.close()
+    
+    return data
+
+# Function to fetch and display treemap data
+def fetch_treemap_data(country=None):
+    dataBase = create_connection()
+    cursor = dataBase.cursor()
+
+    base_query = """
+    SELECT dpc.EnglishProductCategoryName, SUM(fis.SalesAmount) AS TotalSales
+    FROM factinternetsales fis
+    JOIN dimproduct dp ON fis.ProductKey = dp.ProductKey
+    JOIN dimproductsubcategory dps ON dp.ProductSubcategoryKey = dps.ProductSubcategoryKey
+    JOIN dimproductcategory dpc ON dps.ProductCategoryKey = dpc.ProductCategoryKey
+    {}
+    GROUP BY dpc.EnglishProductCategoryName;
+    """
+    
+    if country:
+        query = base_query.format(f"WHERE EXISTS (SELECT 1 FROM dimsalesterritory dst WHERE fis.SalesTerritoryKey = dst.SalesTerritoryKey AND dst.SalesTerritoryCountry = '{country}')")
+    else:
+        query = base_query.format("")
+
+    cursor.execute(query)
+    data = pd.DataFrame(cursor.fetchall(), columns=['ProductCategory', 'TotalSales'])
+
+    cursor.close()
+    dataBase.close()
+    
+    return data
+
+
+# Function to fetch data for choropleth map
+def fetch_choropleth_data(country=None):
+    dataBase = create_connection()
+    cursor = dataBase.cursor()
+
+    base_query = """
+    SELECT dst.SalesTerritoryRegion, SUM(fis.SalesAmount) AS TotalSales
+    FROM factinternetsales fis
+    JOIN dimsalesterritory dst ON fis.SalesTerritoryKey = dst.SalesTerritoryKey
+    {}
+    GROUP BY dst.SalesTerritoryRegion
+    ORDER BY TotalSales DESC;
+    """
+    
+    if country:
+        query = base_query.format(f"WHERE dst.SalesTerritoryCountry = '{country}'")
+    else:
+        query = base_query.format("")
+
+    cursor.execute(query)
+    data = pd.DataFrame(cursor.fetchall(), columns=['SalesTerritoryRegion', 'TotalSales'])
+
+    cursor.close()
+    dataBase.close()
+    
+    return data
+
+# Streamlit interface
+st.set_page_config(layout="wide")
+st.markdown('<h1 style="font-size:30px; text-align:center;">Dashboard Penjualan</h1>', unsafe_allow_html=True)
+
+# Sidebar for selecting country
+st.sidebar.title('📊 Dashboard Penjualan')
+countries = fetch_countries()
+selected_country = st.sidebar.selectbox('Pilih Negara', options=['All'] + countries)
+
+# Menambahkan Nama dengan link GitHub dan NPM di sidebar
+st.sidebar.markdown('<p style="font-size:14px; text-align:center;">Nama: <a href="https://github.com/anggraenideaa/21082010029_UAS_DAVIS" target="_blank">Dea Puspita Anggraeni</a></p>', unsafe_allow_html=True)
+st.sidebar.markdown('<p style="font-size:14px; text-align:center;">NPM: 21082010029</p>', unsafe_allow_html=True)
+
+# Fetch data based on selected country
+data = fetch_data(country=None if selected_country == 'All' else selected_country)
+
+# Convert columns to appropriate data types
+data['YearlyIncome'] = data['YearlyIncome'].astype(float)
+data['TotalSales'] = data['TotalSales'].astype(float)
+
+# Layout of the dashboard
+col1, col2 = st.columns((3, 3))
+
+with col1:
+    # Display scatter plot using Plotly
+    st.markdown('<h2 style="font-size:20px; text-align:center;">Hubungan Antara Pendapatan Tahunan dan Total Penjualan</h2>', unsafe_allow_html=True)
+    fig = px.scatter(data, x='YearlyIncome', y='TotalSales', color_discrete_sequence=["#543310"])
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Fetch sales data based on selected country
+    sales_data = fetch_sales_data(country=None if selected_country == 'All' else selected_country)
+
+    # Pivot data for bar chart
+    pivot_data = sales_data.pivot_table(index='SalesTerritoryRegion', columns='ProductCategory', values='TotalSales', fill_value=0).reset_index()
+
+    # Display bar chart using Plotly
+    st.markdown('<h2 style="font-size:20px; text-align:center;">Perbandingan Penjualan di Berbagai Region Untuk Berbagai Kategori Produk</h2>', unsafe_allow_html=True)
+    fig = px.bar(pivot_data, x='SalesTerritoryRegion', y=pivot_data.columns[1:], color_discrete_sequence=["#543310", "#F8F4E1", "#AF8F6F"])
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Fetch data for choropleth map
+    choropleth_data = fetch_choropleth_data(country=None if selected_country == 'All' else selected_country)
+    sales_territory_regions, total_sales = zip(*choropleth_data.values)
+    
+
+    st.markdown('<h2 style="font-size:20px; text-align:center;"></h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:20px; text-align:center;"></h2>', unsafe_allow_html=True)
+    st.markdown('<h2 style="font-size:20px; text-align:center;"></h2>', unsafe_allow_html=True)
+    # Display choropleth map
+    st.markdown('<h2 style="font-size:20px; text-align:center;">Penjualan Terdistribusi di Berbagai Wilayah Penjualan (SalesTerritoryregion)</h2>', unsafe_allow_html=True)
+    fig = go.Figure(go.Choropleth(
+        locations=sales_territory_regions,  # Menggunakan nama region sebagai locations
+        z=total_sales,  # Menentukan nilai yang akan diplot sebagai warna
+        locationmode='country names',  # Menggunakan mode nama negara
+        colorscale=[[0, "#543310"], [0.5, "#74512D"], [1, "#AF8F6F"]],  # Skala warna yang digunakan
+        colorbar_title='Total Sales',  # Judul color bar
+    ))
+
+    # Menyeting tampilan layout
+    fig.update_layout(
+        geo=dict(
+            showcoastlines=True,  # Menampilkan garis pantai
+            showland=True,  # Menampilkan daratan
+            projection_type='mercator'  # Tipe proyeksi (peta dunia)
+        )
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+with col2:
+    # Fetch treemap data based on selected country
+    treemap_data = fetch_treemap_data(country=None if selected_country == 'All' else selected_country)
+
+    # Display treemap
+    st.markdown('<h2 style="font-size:20px; text-align:center;">Komposisi Total Penjualan Berdasarkan Kategori Produk</h2>', unsafe_allow_html=True)
+    fig = px.treemap(treemap_data, path=['ProductCategory'], values='TotalSales', color_discrete_sequence=["#543310", "#74512D", "#AF8F6F"])
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Display each product category and its total sales in a card format
+    st.markdown('<h2 style="font-size:20px; text-align:center;">Total Penjualan Berdasarkan Kategori Produk</h2>', unsafe_allow_html=True)
+    for index, row in treemap_data.iterrows():
+        category = row['ProductCategory']
+        total_sales = row['TotalSales']
+        st.markdown(f'<div style="background-color: #f8f9fa; border-radius: 10px; padding: 20px; margin: 10px 0;">'
+                    f'<h3 style="font-size:20px; text-align:center;">{category}</h3>'
+                    f'<h1 style="font-size:50px; text-align:center;">{total_sales}</h1>'
+                    '</div>', unsafe_allow_html=True)
+                    
+
+
+    # Fetch data for histogram of sales amount by sales territory region based on selected country
+    st.markdown('<h2 style="font-size:20px; text-align:center;">Penjualan Terdistribusi di Berbagai Wilayah Penjualan (SalesTerritoryregion)</h2>', unsafe_allow_html=True)
+    sales_amount_data = fetch_choropleth_data(country=None if selected_country == 'All' else selected_country)
+
+
+    # Plot histogram using Plotly Express
+    fig = px.bar(sales_amount_data, x='SalesTerritoryRegion', y='TotalSales', 
+                labels={'SalesTerritoryRegion': 'Sales Territory Region', 'TotalSales': 'Total Sales'}, color_discrete_sequence=["#543310"])
+    fig.update_xaxes(tickangle=-45)
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Adding text card below the last graph for narrative explanation
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-top: 20px;">
+            <h2 style="font-size:20px; text-align:center;">Penjelasan Grafik</h2>
+            <p style="text-align:justify;">
+                1. <b>Data yang digunakan</b> adalah datawerehouse adventure works.
+            </p>
+            <p style="text-align:justify;">
+                2. <b>Scatter Plot Hubungan Antara Pendapatan Tahunan dan Total Penjualan</b> digunakan untuk mengetahui hubungan antara jumlah penjualan dengan pendapatan tahunan customer.
+            </p>
+            <p style="text-align:justify;">
+                3. <b>Treemap Persentase Penjualan per Kategori Produk (Bahasa Inggris)</b> digunakan untuk mengetahui perbandingan penjualan di berbagai region untuk berbagai kategori produk.
+            </p>
+            <p style="text-align:justify;">
+                4. <b>Card Text per Kategori Produk</b> yang diambil dari grafik treemap untuk menampilkan penjualan tiap produk.
+            </p>
+            <p style="text-align:justify;">
+                5. <b>Stacked Bar Chart Penjualan Per Kategori Produk berdasarkan Wilayah Penjualan</b> digunakan untuk mengetahui perbandingan penjualan di berbagai region untuk berbagai kategori produk.
+            </p>
+            <p style="text-align:justify;">
+                6. <b>Map Chart Total Sales by Sales Territory Region</b> digunakan untuk mengetahui peta wilayah region yang terhubung dari stacked bar chart.
+            </p>
+            <p style="text-align:justify;">
+                7. <b>Column Histogram Histogram of Sales Amount by Sales Territory Region</b> digunakan untuk mengetahui penjualan terdistribusi di berbagai wilayah penjualan (SalesTerritoryregion).
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
