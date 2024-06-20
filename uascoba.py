@@ -66,7 +66,7 @@ def plot_bubble_chart(data):
 
     return fig
 
-    def plot_stacked_column_chart(data):
+def plot_stacked_column_chart(data):
     pivot_data = data.pivot(index='SalesTerritoryRegion', columns='Gender', values='CustomerCount')
 
     plt.style.use('dark_background')
@@ -87,14 +87,13 @@ def plot_bubble_chart(data):
     plt.tight_layout()
 
     return fig
-    
-# nav sidebar
-with st.sidebar:
-    selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'],
-        icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
 
-# Grafik
-if selected == 'Grafik':
+# Function to fetch and display data
+def main():
+    st.sidebar.title('Angel Dashboard')
+    selected = st.sidebar.selectbox("Select Dashboard", ['Grafik', 'Book Scrap'], index=0)
+
+    if selected == 'Grafik':
         st.write("""# GRAFIK""")
         
         query_histogram = """
