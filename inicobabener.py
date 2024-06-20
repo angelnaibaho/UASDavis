@@ -55,7 +55,9 @@ def plot_scatter_chart(data):
 
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(12, 8))
-    scatter = ax.scatter(data['AgeGroup'], data['Number_of_Customers'], s=sizes, alpha=0.5)
+    
+    # Scatter plot
+    scatter = plt.scatter(data['AgeGroup'], data['Number_of_Customers'], s=sizes, alpha=0.5)
 
     ax.set_title("Customer Count by Age Group (Scatter Plot)", color='white')
     ax.set_xlabel('Age Group', color='white')
