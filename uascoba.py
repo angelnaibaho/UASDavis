@@ -1,78 +1,74 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 import pandas as pd
-import plotly.express as px
 import mysql.connector as mysqlcon
-from sqlalchemy import create_engine
 import matplotlib.pyplot as plt
 
 # Function to create a connection to the database
 def create_connection():
-    return mysql.connector.connect(
+    return mysqlcon.connect(
         host="kubela.id",
         user="davis2024irwan",
         passwd="wh451n9m@ch1n3",
-        port=3306,  
+        port=3306,
         database="aw"
     )
 
+# Function to fetch data from the database
+def fetch_data_from_db(query):
+    try:
+        conn = create_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query)
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return pd.DataFrame(data)
+    except mysqlcon.Error as e:
+        st.error(f"Error fetching data: {e}")
+        return None
+
 def plot_histogram(data):
-    # Pivot data
     pivot_data = data.pivot(index='Product Category', columns='Gender', values='Quantity')
 
-    # Mengubah gaya plot menjadi dark_background
     plt.style.use('dark_background')
-
-    # Plotting column chart (histogram)
     fig, ax = plt.subplots(figsize=(10, 6))
     pivot_data.plot(kind='bar', ax=ax)
 
-    # Adding Title to the Plot
     ax.set_title("Total Quantity by Product Category and Gender", color='white')
-
-    # Setting the X and Y labels
     ax.set_xlabel('Product Category', color='white')
     ax.set_ylabel('Total Quantity', color='white')
 
-    # Adding the legends
     ax.legend(title='Gender', facecolor='black', edgecolor='white', loc='upper right')
-    ax.set_facecolor('black')  # Set background color of the plot area
-    fig.patch.set_facecolor('black')  # Set background color of the figure
-    fig.patch.set_edgecolor('white')  # Set edge color of the figure
+    ax.set_facecolor('black')
+    fig.patch.set_facecolor('black')
+    fig.patch.set_edgecolor('white')
 
-    # Customize tick colors
-    ax.tick_params(colors='white', which='both')  # Change color of ticks
-
-    plt.xticks(rotation=45)  # Rotate x-axis labels if necessary
-    plt.tight_layout()       # Adjust layout to make room for x-axis labels
+    ax.tick_params(colors='white', which='both')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
 
     return fig
 
 def plot_bubble_chart(data):
-    # Calculate bubble sizes based on CustomerCount
-    sizes = data['CustomerCount'] * 20  # Adjust scaling factor as needed
+    sizes = data['CustomerCount'] * 20
 
-    # Plotting the bubble plot
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(12, 8))
     scatter = ax.scatter(data['SalesTerritoryRegion'], data['CustomerCount'], s=sizes, alpha=0.5)
 
-    # Adding Title to the Plot
     ax.set_title("Customer Count by Sales Territory Region (Bubble Plot)", color='white')
-
-    # Setting the X and Y labels
     ax.set_xlabel('Sales Territory Region', color='white')
     ax.set_ylabel('Customer Count', color='white')
 
-    # Rotate x-axis labels if necessary
     plt.xticks(rotation=90)
-    plt.tight_layout()  # Adjust layout to make room for x-axis labels
+    plt.tight_layout()
 
     return fig
 
 # nav sidebar
 with st.sidebar:
-    selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'], 
+    selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'],
         icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
 
 # Grafik
@@ -93,7 +89,8 @@ if selected == 'Grafik':
         dpc.EnglishProductCategoryName,
         gen.Gender
     ORDER BY 
-        Quantity;"""
+        Quantity;
+    """
     data = fetch_data_from_db(query)
     if data is not None:
         col1, col2 = st.columns(2)
