@@ -29,6 +29,7 @@ def fetch_data_from_db(query):
         return None
 
 def plot_histogram(data):
+    # Pastikan data memiliki kolom 'Product Category', 'Gender', dan 'Quantity'
     pivot_data = data.pivot(index='Product Category', columns='Gender', values='Quantity')
 
     plt.style.use('dark_background')
@@ -51,6 +52,7 @@ def plot_histogram(data):
     return fig
 
 def plot_bubble_chart(data):
+    # Pastikan data memiliki kolom 'SalesTerritoryRegion' dan 'CustomerCount'
     sizes = data['CustomerCount'] * 20
 
     plt.style.use('dark_background')
