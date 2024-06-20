@@ -66,17 +66,18 @@ def plot_bubble_chart(data):
 
     return fig
 
-# Sidebar with navigation and year selection
+# Sidebar with navigation
 with st.sidebar:
     selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'],
                            icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
 
-    # Add a selectbox for year selection
+# Main content
+if selected == 'Grafik':
+    # Year selection above the "GRAFIK" heading
     year = st.selectbox("Select Year", options=[2012, 2013, 2014, 2015], index=0)
 
-# Grafik
-if selected == 'Grafik':
     st.write("""# GRAFIK""")
+
     query = f"""
     SELECT 
         dpc.EnglishProductCategoryName AS `Product Category`, 
