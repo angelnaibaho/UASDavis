@@ -79,20 +79,24 @@ if selected == 'Grafik':
     st.write("""# GRAFIK""")
     query = """
     SELECT 
-        dpc.EnglishProductCategoryName AS `Product Category`, 
-        gen.Gender AS Gender,
-        COUNT(fs.OrderQuantity) AS Quantity 
-    FROM 
-        factinternetsales fs 
-    JOIN dimproduct dp ON dp.ProductKey = fs.ProductKey 
-    JOIN dimproductsubcategory dsc ON dp.ProductSubcategoryKey = dsc.ProductSubcategoryKey 
-    JOIN dimproductcategory dpc ON dsc.ProductCategoryKey = dpc.ProductCategoryKey 
-    JOIN dimcustomer gen ON fs.CustomerKey = gen.CustomerKey
-    GROUP BY 
-        dpc.EnglishProductCategoryName,
-        gen.Gender
-    ORDER BY 
-        Quantity;
+    CASE 
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 30 AND 39 THEN '30-39'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 40 AND 49 THEN '40-49'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 50 AND 59 THEN '50-59'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 60 AND 69 THEN '60-69'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 70 AND 79 THEN '70-79'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 80 AND 89 THEN '80-89'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 90 AND 99 THEN '90-99'
+        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) >= 100 THEN '100+'
+        ELSE 'Unknown'
+    END AS AgeGroup,
+    COUNT(dc.CustomerKey) AS Number_of_Customers
+FROM 
+    dimcustomer dc
+GROUP BY 
+    AgeGroup
+ORDER BY 
+    MIN(ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365));
     """
     data = fetch_data_from_db(query)
     if data is not None:
