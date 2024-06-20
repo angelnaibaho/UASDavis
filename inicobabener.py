@@ -51,15 +51,15 @@ def plot_histogram(data):
     return fig
 
 def plot_bubble_chart(data):
-    sizes = data['CustomerCount'] * 20
+    sizes = data['Number_of_Customers'] * 20
 
     plt.style.use('dark_background')
     fig, ax = plt.subplots(figsize=(12, 8))
-    scatter = ax.scatter(data['SalesTerritoryRegion'], data['CustomerCount'], s=sizes, alpha=0.5)
+    scatter = ax.scatter(data['AgeGroup'], data['Number_of_Customers'], s=sizes, alpha=0.5)
 
-    ax.set_title("Customer Count by Sales Territory Region (Bubble Plot)", color='white')
-    ax.set_xlabel('Sales Territory Region', color='white')
-    ax.set_ylabel('Customer Count', color='white')
+    ax.set_title("Customer Count by Age Group (Bubble Plot)", color='white')
+    ax.set_xlabel('Age Group', color='white')
+    ax.set_ylabel('Number of Customers', color='white')
 
     plt.xticks(rotation=90)
     plt.tight_layout()
@@ -77,7 +77,7 @@ if selected == 'Grafik':
     year = st.selectbox("Select Year", options=[2001, 2002, 2003, 2004], index=0)
     
     st.write("""# GRAFIK""")
-    query = """
+    query_histogram = """
     SELECT 
         dpc.EnglishProductCategoryName AS `Product Category`, 
         gen.Gender AS Gender,
@@ -94,35 +94,35 @@ if selected == 'Grafik':
     ORDER BY 
         Quantity;
     """
-    data = fetch_data_from_db(query)
-    if data is not None:
+    data_histogram = fetch_data_from_db(query_histogram)
+    if data_histogram is not None:
         col1, col2 = st.columns(2)
         
         with col1:
-            fig1 = plot_histogram(data)
+            fig1 = plot_histogram(data_histogram)
             st.pyplot(fig1)
 
         with col2:
             query_bubble = """
             SELECT 
-    CASE 
-        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 30 AND 39 THEN '30-39'
-        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 40 AND 49 THEN '40-49'
-        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 50 AND 59 THEN '50-59'
-        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 60 AND 69 THEN '60-69'
-        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 70 AND 79 THEN '70-79'
-        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 80 AND 89 THEN '80-89'
-        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 90 AND 99 THEN '90-99'
-        WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) >= 100 THEN '100+'
-        ELSE 'Unknown'
-    END AS AgeGroup,
-    COUNT(dc.CustomerKey) AS Number_of_Customers
-FROM 
-    dimcustomer dc
-GROUP BY 
-    AgeGroup
-ORDER BY 
-    MIN(ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365));
+                CASE 
+                    WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 30 AND 39 THEN '30-39'
+                    WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 40 AND 49 THEN '40-49'
+                    WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 50 AND 59 THEN '50-59'
+                    WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 60 AND 69 THEN '60-69'
+                    WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 70 AND 79 THEN '70-79'
+                    WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 80 AND 89 THEN '80-89'
+                    WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) BETWEEN 90 AND 99 THEN '90-99'
+                    WHEN ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365) >= 100 THEN '100+'
+                    ELSE 'Unknown'
+                END AS AgeGroup,
+                COUNT(dc.CustomerKey) AS Number_of_Customers
+            FROM 
+                dimcustomer dc
+            GROUP BY 
+                AgeGroup
+            ORDER BY 
+                MIN(ROUND(DATEDIFF('2005-01-01', dc.BirthDate) / 365));
             """
             data_bubble = fetch_data_from_db(query_bubble)
             if data_bubble is not None:
