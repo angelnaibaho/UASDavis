@@ -74,8 +74,6 @@ with st.sidebar:
 
 # Grafik
 if selected == 'Grafik':
-    # Year selection above the "GRAFIK" heading
-    year = st.selectbox("Select Year", options=[2001, 2002, 2003, 2004], index=0)
     
     st.write("""# GRAFIK""")
     query = """
