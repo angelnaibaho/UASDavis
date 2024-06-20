@@ -90,7 +90,7 @@ if selected == 'Grafik':
     JOIN dimproductcategory dpc ON dsc.ProductCategoryKey = dpc.ProductCategoryKey 
     JOIN dimcustomer gen ON fs.CustomerKey = gen.CustomerKey
     WHERE 
-        YEAR(fs.OrderDate) = {year}
+        LEFT(fs.OrderDateKey, 4) = '{year}'
     GROUP BY 
         dpc.EnglishProductCategoryName,
         gen.Gender
@@ -115,7 +115,7 @@ if selected == 'Grafik':
             JOIN dimcustomer ON dimgeography.GeographyKey = dimcustomer.GeographyKey 
             JOIN dimsalesterritory ON dimgeography.SalesTerritoryKey = dimsalesterritory.SalesTerritoryKey
             WHERE 
-                YEAR(dimcustomer.DateFirstPurchase) = {year}
+                LEFT(dimcustomer.DateFirstPurchaseKey, 4) = '{year}'
             GROUP BY   
                 dimgeography.SalesTerritoryKey, dimsalesterritory.SalesTerritoryRegion
             ORDER BY  
