@@ -124,6 +124,7 @@ if selected == 'Grafik':
 
         with col2:
             # Fetch data for bubble chart
+            st.write("""1. Bubble Plot Chart""")
             query_bubble = """
                 SELECT 
                     dimsalesterritory.SalesTerritoryRegion,  
