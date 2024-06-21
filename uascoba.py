@@ -80,6 +80,11 @@ if selected == 'Grafik':
     
     # Fetch data for histogram
     st.write("""1. GRAFIK HISTOGRAM (COMPARISON)""")
+    st.write("""Grafik di bawah ini menampilkan total penjualan berdasarkan kategori produk dan gender selama periode empat tahun (2001-2004). 
+        Dapat dilihat bahwa kategori produk dengan penjualan tertinggi adalah Accessoris, dengan pria membeli sebanyak 18,233 unit dan wanita sebanyak 17,859 unit. 
+        Di sisi lain, kategori produk dengan penjualan terendah adalah Clothing, dengan pria membeli 7,525 unit dan wanita membeli 7,680 unit. 
+        Perhatian lebih lanjut mungkin perlu diberikan pada kategori produk yang memiliki penjualan terendah untuk meningkatkan performa di masa mendatang.)
+    
     query_histogram = """
         SELECT 
             dpc.EnglishProductCategoryName AS `Product Category`, 
