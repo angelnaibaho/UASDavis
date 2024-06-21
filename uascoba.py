@@ -15,6 +15,7 @@ def create_connection():
     )
 
 # Function to fetch data from the database
+st.write("""1. GRAFIK HISTOGRAM""")
 def fetch_data_from_db(query):
     try:
         conn = create_connection()
@@ -93,7 +94,7 @@ with st.sidebar:
 # Grafik
 if selected == 'Grafik':
     
-    st.write("""# GRAFIK""")
+    st.write("""# GRAFIK DATABASE ADEVENTURE WORKS""")
     
     # Fetch data for histogram
     query_histogram = """
