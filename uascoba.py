@@ -149,9 +149,7 @@ if selected == 'Grafik':
         # Plot line chart for monthly orders
         try:
             data_monthly_orders = pd.read_sql(query_monthly_orders, create_connection())
-            
-            # Mengatur ukuran gambar
-            plt.figure(figsize=(12, 8))
+
             
             # Plotting line chart
             plt.plot(data_monthly_orders['EnglishMonthName'], data_monthly_orders['Quantity'], marker='o')
