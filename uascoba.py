@@ -119,39 +119,37 @@ if selected == 'Grafik':
     Dapat dilihat bahwa produk yang memiliki penjualan terbesar yaitu pada kategori Accessoris dan yang paling banyak membeli yaitu Male sebanyak 18233 dan Female sebanyak 17859""")
     
     if data_histogram is not None:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            fig1 = plot_histogram(data_histogram)
-            st.pyplot(fig1)
+        # Plot histogram
+        fig1 = plot_histogram(data_histogram)
+        st.pyplot(fig1)
 
-        with col2:
-            # Fetch data for bubble chart
-            st.write("""2. Bubble Plot Chart""")
-            query_bubble = """
-                SELECT 
-                    dimsalesterritory.SalesTerritoryRegion,  
-                    COUNT(dimcustomer.CustomerKey) AS CustomerCount 
-                FROM  
-                    dimgeography 
-                JOIN dimcustomer ON dimgeography.GeographyKey = dimcustomer.GeographyKey 
-                JOIN dimsalesterritory ON dimgeography.SalesTerritoryKey = dimsalesterritory.SalesTerritoryKey
-                GROUP BY   
-                    dimgeography.SalesTerritoryKey, dimsalesterritory.SalesTerritoryRegion
-                ORDER BY  
-                    CustomerCount;
-            """
-            data_bubble = fetch_data_from_db(query_bubble)
-            if data_bubble is not None:
-                fig2 = plot_bubble_chart(data_bubble)
-                st.pyplot(fig2)
+        # Fetch data for bubble chart
+        st.write("""2. Bubble Plot Chart""")
+        query_bubble = """
+            SELECT 
+                dimsalesterritory.SalesTerritoryRegion,  
+                COUNT(dimcustomer.CustomerKey) AS CustomerCount 
+            FROM  
+                dimgeography 
+            JOIN dimcustomer ON dimgeography.GeographyKey = dimcustomer.GeographyKey 
+            JOIN dimsalesterritory ON dimgeography.SalesTerritoryKey = dimsalesterritory.SalesTerritoryKey
+            GROUP BY   
+                dimgeography.SalesTerritoryKey, dimsalesterritory.SalesTerritoryRegion
+            ORDER BY  
+                CustomerCount;
+        """
+        data_bubble = fetch_data_from_db(query_bubble)
+        if data_bubble is not None:
+            # Plot bubble chart
+            fig2 = plot_bubble_chart(data_bubble)
+            st.pyplot(fig2)
 
         # Plot line chart for monthly orders
         try:
             data_monthly_orders = pd.read_sql(query_monthly_orders, create_connection())
 
-            
             # Plotting line chart
+            plt.figure(figsize=(12, 8))
             plt.plot(data_monthly_orders['EnglishMonthName'], data_monthly_orders['Quantity'], marker='o')
 
             # Menambahkan judul
