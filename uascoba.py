@@ -3,17 +3,9 @@ from streamlit_option_menu import option_menu
 import pandas as pd
 import mysql.connector as mysqlcon
 import matplotlib.pyplot as plt
-from sqlalchemy import create_engine
 import pyttsx3
 import translators as ts
 from gtts import gTTS
-
-# Fungsi untuk mengonversi teks menjadi suara
-def text_to_speech(text, language_code):
-    # Kode untuk mengonversi teks ke suara (menggunakan Google Translate atau layanan TTS lainnya)
-    hasil = ts.translate_text(text, to_language=language_code, translator='google')
-    tts = gTTS(text=hasil, lang=language_code)
-    return tts
 
 # Function to create a connection to the database
 def create_connection():
@@ -112,26 +104,22 @@ if selected == 'Grafik':
     Di sisi lain, kategori produk dengan penjualan terendah adalah Clothing, dengan pria membeli 7,525 unit dan wanita membeli 7,680 unit. 
     Perhatian lebih lanjut mungkin perlu diberikan pada kategori produk yang memiliki penjualan terendah untuk meningkatkan performa di masa mendatang.""")
 
-
-    # Add button to trigger TTS
+    # Tambahkan tombol untuk memainkan TTS dalam bahasa Inggris
     if st.button("Play in English"):
-        # Inisialisasi engine TTS
+        text = "Text to be spoken in English"  # Ganti dengan teks yang ingin diucapkan dalam bahasa Inggris
         engine = pyttsx3.init()
-        # Memainkan teks dalam bahasa Inggris
         engine.say(text)
         engine.runAndWait()
 
+    # Tambahkan tombol untuk memainkan TTS dalam bahasa Indonesia
     if st.button("Jalankan dengan Indonesia"):
-        # Inisialisasi engine TTS
-        engine = pyttsx3.init()
-        # Memainkan teks dalam bahasa Indonesia
-        tts = text_to_speech(text, 'id')
+        text = "Text to be spoken in Indonesian"  # Ganti dengan teks yang ingin diucapkan dalam bahasa Indonesia
+        tts = gTTS(text=text, lang='id')
         tts.save('output_id.mp3')  # Simpan output sebagai file audio
         audio_file = open('output_id.mp3', 'rb')
         audio_bytes = audio_file.read()
         st.audio(audio_bytes, format='audio/mp3')
 
-    
     if data_histogram is not None:
         # Plot histogram
         fig1 = plot_histogram(data_histogram)
