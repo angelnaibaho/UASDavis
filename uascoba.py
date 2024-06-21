@@ -4,7 +4,6 @@ import pandas as pd
 import mysql.connector as mysqlcon
 import matplotlib.pyplot as plt
 import pyttsx3
-import translators as ts
 from gtts import gTTS
 
 # Function to create a connection to the database
@@ -99,17 +98,7 @@ if selected == 'Grafik':
             Quantity;
     """
     data_histogram = fetch_data_from_db(query_histogram)
-    # Tambahkan tombol untuk memainkan TTS dalam bahasa Inggris
-    if st.button("Play in English"):
-        text = "Text to be spoken in English"  # Ganti dengan teks yang ingin diucapkan dalam bahasa Inggris
-        engine = pyttsx3.init()
-        engine.say(text)
-        engine.runAndWait
-    st.write("""Grafik di bawah ini menampilkan total penjualan berdasarkan kategori produk dan gender selama periode empat tahun (2001-2004). 
-    Dapat dilihat bahwa kategori produk dengan penjualan tertinggi adalah Accessoris, dengan pria membeli sebanyak 18,233 unit dan wanita sebanyak 17,859 unit. 
-    Di sisi lain, kategori produk dengan penjualan terendah adalah Clothing, dengan pria membeli 7,525 unit dan wanita membeli 7,680 unit. 
-    Perhatian lebih lanjut mungkin perlu diberikan pada kategori produk yang memiliki penjualan terendah untuk meningkatkan performa di masa mendatang.""")
-
+    
     # Tambahkan tombol untuk memainkan TTS dalam bahasa Inggris
     if st.button("Play in English"):
         text = "Text to be spoken in English"  # Ganti dengan teks yang ingin diucapkan dalam bahasa Inggris
