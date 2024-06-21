@@ -115,6 +115,8 @@ if selected == 'Grafik':
             Quantity;
     """
     data_histogram = fetch_data_from_db(query_histogram)
+    st.write("""Grafik diatas menjelaskan """)
+    
     if data_histogram is not None:
         col1, col2 = st.columns(2)
         
@@ -124,7 +126,7 @@ if selected == 'Grafik':
 
         with col2:
             # Fetch data for bubble chart
-            st.write("""1. Bubble Plot Chart""")
+            st.write("""2. Bubble Plot Chart""")
             query_bubble = """
                 SELECT 
                     dimsalesterritory.SalesTerritoryRegion,  
