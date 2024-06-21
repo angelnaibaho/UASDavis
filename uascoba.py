@@ -32,7 +32,7 @@ def plot_histogram(data):
     pivot_data = data.pivot(index='Product Category', columns='Gender', values='Quantity')
 
     plt.style.use('dark_background')
-    fig, ax = plt.subplots(figsize=(15, 11))
+    fig, ax = plt.subplots(figsize=(20, 11))
     pivot_data.plot(kind='bar', ax=ax)
 
     ax.set_title("Total Quantity by Product Category and Gender", color='white')
