@@ -70,7 +70,7 @@ def plot_bubble_chart(data):
 # nav sidebar
 with st.sidebar:
     selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'],
-                           icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
+        icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
 
 # Grafik
 if selected == 'Grafik':
@@ -147,26 +147,22 @@ if selected == 'Grafik':
                     'January', 'February', 'March', 'April', 'May', 'June', 
                     'July', 'August', 'September', 'October', 'November', 'December');
         """
-        try:
-            data_monthly_orders = fetch_data_from_db(query_monthly_orders)
-            if data_monthly_orders is not None:
-                # Plotting line chart
-                plt.figure(figsize=(12, 8))
-                plt.plot(data_monthly_orders['EnglishMonthName'], data_monthly_orders['OrderQuantity'], marker='o')
+        data_monthly_orders = fetch_data_from_db(query_monthly_orders)
+        if data_monthly_orders is not None:
+            # Plotting line chart
+            plt.figure(figsize=(12, 8))
+            plt.plot(data_monthly_orders['EnglishMonthName'], data_monthly_orders['OrderQuantity'], marker='o')
 
-                # Adding title
-                plt.title('Order Quantity by Month (Line Chart)')
+            # Adding title
+            plt.title('Order Quantity by Month (Line Chart)')
 
-                # Adding labels for x and y axis
-                plt.xlabel('Month')
-                plt.ylabel('Order Quantity')
+            # Adding labels for x and y axis
+            plt.xlabel('Month')
+            plt.ylabel('Order Quantity')
 
-                # Rotating x-axis labels to avoid overlap
-                plt.xticks(rotation=45)
+            # Rotating x-axis labels to avoid overlap
+            plt.xticks(rotation=45)
 
-                # Display plot
-                plt.tight_layout()
-                st.pyplot()
-
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+            # Display plot
+            plt.tight_layout()
+            st.pyplot(plt)
