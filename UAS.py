@@ -173,17 +173,6 @@ if selected == 'Grafik':
                     'July', 'August', 'September', 'October', 'November', 'December');
         """
         data_monthly_orders = fetch_data_from_db(query_monthly_orders)
-
-        # Tambahkan tombol untuk memainkan TTS dalam bahasa Indonesia
-        if st.button("Jalankan Text"):
-        
-        language_code = 'id'
-        hasil2 = ts.translate_text(text2, to_language=language_code, translator='google')
-        tts = gTTS(text2=hasil2, lang=language_code)
-        tts.save('output_id.mp3')  # Simpan output sebagai file audio
-        audio_file = open('output_id.mp3', 'rb')
-        audio_bytes = audio_file.read()
-        st.audio(audio_bytes, format='audio/mp3')
         
         if data_monthly_orders is not None:
             # Plotting line chart
