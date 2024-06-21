@@ -15,7 +15,6 @@ def create_connection():
     )
 
 # Function to fetch data from the database
-st.write("""1. GRAFIK HISTOGRAM""")
 def fetch_data_from_db(query):
     try:
         conn = create_connection()
@@ -97,6 +96,7 @@ if selected == 'Grafik':
     st.write("""# GRAFIK DATABASE ADEVENTURE WORKS""")
     
     # Fetch data for histogram
+    st.write("""1. GRAFIK HISTOGRAM""")
     query_histogram = """
         SELECT 
             dpc.EnglishProductCategoryName AS `Product Category`, 
