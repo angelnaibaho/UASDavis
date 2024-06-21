@@ -8,7 +8,7 @@ from gtts import gTTS
 import translators as ts  
 # nav sidebar
 with st.sidebar:
-    selected = option_menu("Angel Dashboard", ['Grafik AW', 'Movie'],
+    selected = option_menu("Dashboard", ['Grafik AW', 'Movie'],
                            icons=['grafik', 'film'], menu_icon="house", default_index=0)
 
 # Function to create a connection to the database
