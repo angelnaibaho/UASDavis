@@ -119,6 +119,7 @@ if selected == 'Grafik':
     Dapat dilihat bahwa produk yang memiliki penjualan terbesar yaitu pada kategori Accessoris dan yang paling banyak membeli yaitu Male sebanyak 18233 dan Female sebanyak 17859""")
     
     if data_histogram is not None:
+        col1, col2 = st.columns(2)
         
         with col1:
             fig1 = plot_histogram(data_histogram)
