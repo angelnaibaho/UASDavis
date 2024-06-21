@@ -96,7 +96,7 @@ if selected == 'Grafik':
     st.write("""# GRAFIK DATABASE ADEVENTURE WORKS""")
     
     # Fetch data for histogram
-    st.write("""1. GRAFIK HISTOGRAM""")
+    st.write("""1. GRAFIK HISTOGRAM (COMPARISON)""")
     query_histogram = """
         SELECT 
             dpc.EnglishProductCategoryName AS `Product Category`, 
@@ -115,7 +115,8 @@ if selected == 'Grafik':
             Quantity;
     """
     data_histogram = fetch_data_from_db(query_histogram)
-    st.write("""Grafik diatas menjelaskan """)
+    st.write("""Grafik dibawah ini menunjukkan total banyaknya penjualan kategori produk berdasarkan gender.
+    Dapat dilihat bahwa produk yang memiliki penjualan terbesar yaitu pada kategori Accessoris dan yang paling banyak membeli yaitu Male sebanyak 18233 dan Female sebanyak 17859""")
     
     if data_histogram is not None:
         col1, col2 = st.columns(2)
