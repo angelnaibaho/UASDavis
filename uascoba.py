@@ -3,6 +3,7 @@ from streamlit_option_menu import option_menu
 import pandas as pd
 import mysql.connector as mysqlcon
 import matplotlib.pyplot as plt
+from sqlalchemy import create_engine
 
 # Function to create a connection to the database
 def create_connection():
@@ -66,29 +67,10 @@ def plot_bubble_chart(data):
 
     return fig
 
-# Query SQL untuk mengambil data jumlah pesanan berdasarkan bulan
-query_monthly_orders = """
-    SELECT 
-        month.EnglishMonthName,  
-        COUNT(fs.OrderQuantity) AS Quantity
-    FROM  
-        dimtime AS month
-    JOIN 
-        factinternetsales AS fs ON month.TimeKey = fs.OrderDateKey 
-    WHERE 
-        month.CalendarYear BETWEEN 2003 AND 2004
-    GROUP BY   
-        month.EnglishMonthName
-    ORDER BY  
-        FIELD(month.EnglishMonthName,
-            'January', 'February', 'March', 'April', 'May', 'June', 
-            'July', 'August', 'September', 'October', 'November', 'December');
-"""
-
 # nav sidebar
 with st.sidebar:
     selected = option_menu("Angel Dashboard", ['Grafik', 'Book Scrap'],
-        icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
+                           icons=['film', 'book', 'chart'], menu_icon="house", default_index=0)
 
 # Grafik
 if selected == 'Grafik':
@@ -147,26 +129,44 @@ if selected == 'Grafik':
             st.pyplot(fig2)
 
         # Plot line chart for monthly orders
+        st.write("""3. Line Chart of Order Quantity by Month (2003-2004)""")
+        query_monthly_orders = """
+            SELECT 
+                month.EnglishMonthName,  
+                COUNT(fs.OrderQuantity) AS OrderQuantity
+            FROM  
+                dimtime AS month
+            JOIN 
+                factinternetsales AS fs ON month.TimeKey = fs.OrderDateKey 
+            WHERE 
+                month.CalendarYear BETWEEN 2003 AND 2004
+            GROUP BY   
+                month.EnglishMonthName
+            ORDER BY  
+                FIELD(month.EnglishMonthName,
+                    'January', 'February', 'March', 'April', 'May', 'June', 
+                    'July', 'August', 'September', 'October', 'November', 'December');
+        """
         try:
-            data_monthly_orders = pd.read_sql(query_monthly_orders, create_connection())
+            data_monthly_orders = fetch_data_from_db(query_monthly_orders)
+            if data_monthly_orders is not None:
+                # Plotting line chart
+                plt.figure(figsize=(12, 8))
+                plt.plot(data_monthly_orders['EnglishMonthName'], data_monthly_orders['OrderQuantity'], marker='o')
 
-            # Plotting line chart
-            plt.figure(figsize=(12, 8))
-            plt.plot(data_monthly_orders['EnglishMonthName'], data_monthly_orders['Quantity'], marker='o')
+                # Adding title
+                plt.title('Order Quantity by Month (Line Chart)')
 
-            # Menambahkan judul
-            plt.title('Order Quantity by Month (Line Chart)')
+                # Adding labels for x and y axis
+                plt.xlabel('Month')
+                plt.ylabel('Order Quantity')
 
-            # Menambahkan label sumbu x dan y
-            plt.xlabel('Month')
-            plt.ylabel('Order Quantity')
+                # Rotating x-axis labels to avoid overlap
+                plt.xticks(rotation=45)
 
-            # Memutar label sumbu x agar tidak bertabrakan
-            plt.xticks(rotation=45)
-
-            # Menampilkan plot
-            plt.tight_layout()
-            st.pyplot(plt)
+                # Display plot
+                plt.tight_layout()
+                st.pyplot()
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
