@@ -4,6 +4,16 @@ import pandas as pd
 import mysql.connector as mysqlcon
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine
+import pyttsx3
+import translators as ts
+from gtts import gTTS
+
+# Fungsi untuk mengonversi teks menjadi suara
+def text_to_speech(text, language_code):
+    # Kode untuk mengonversi teks ke suara (menggunakan Google Translate atau layanan TTS lainnya)
+    hasil = ts.translate_text(text, to_language=language_code, translator='google')
+    tts = gTTS(text=hasil, lang=language_code)
+    return tts
 
 # Function to create a connection to the database
 def create_connection():
@@ -102,8 +112,22 @@ if selected == 'Grafik':
     Di sisi lain, kategori produk dengan penjualan terendah adalah Clothing, dengan pria membeli 7,525 unit dan wanita membeli 7,680 unit. 
     Perhatian lebih lanjut mungkin perlu diberikan pada kategori produk yang memiliki penjualan terendah untuk meningkatkan performa di masa mendatang.""")
 
-    # Play sound when clicked
-        audio_file = open('path_to_your_audio_file.mp3', 'rb')
+
+    # Add button to trigger TTS
+    if st.button("Play in English"):
+        # Inisialisasi engine TTS
+        engine = pyttsx3.init()
+        # Memainkan teks dalam bahasa Inggris
+        engine.say(text)
+        engine.runAndWait()
+
+    if st.button("Jalankan dengan Indonesia"):
+        # Inisialisasi engine TTS
+        engine = pyttsx3.init()
+        # Memainkan teks dalam bahasa Indonesia
+        tts = text_to_speech(text, 'id')
+        tts.save('output_id.mp3')  # Simpan output sebagai file audio
+        audio_file = open('output_id.mp3', 'rb')
         audio_bytes = audio_file.read()
         st.audio(audio_bytes, format='audio/mp3')
 
