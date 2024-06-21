@@ -125,6 +125,15 @@ if selected == 'Grafik':
 
         # Fetch data for bubble chart
         st.write("""2. Bubble Plot Chart""")
+        
+        text2 = """
+        Grafik di bawah ini menampilkan total penjualan berdasarkan kategori produk dan gender selama periode empat tahun (2001-2004). 
+        Dapat dilihat bahwa kategori produk dengan penjualan tertinggi adalah Accessoris, dengan pria membeli sebanyak 18,233 unit dan wanita sebanyak 17,859 unit. 
+        Di sisi lain, kategori produk dengan penjualan terendah adalah Clothing, dengan pria membeli 7,525 unit dan wanita membeli 7,680 unit. 
+        Perhatian lebih lanjut mungkin perlu diberikan pada kategori produk yang memiliki penjualan terendah untuk meningkatkan performa di masa mendatang.
+        """
+        st.write(text2)
+
         query_bubble = """
             SELECT 
                 dimsalesterritory.SalesTerritoryRegion,  
@@ -164,6 +173,18 @@ if selected == 'Grafik':
                     'July', 'August', 'September', 'October', 'November', 'December');
         """
         data_monthly_orders = fetch_data_from_db(query_monthly_orders)
+
+        # Tambahkan tombol untuk memainkan TTS dalam bahasa Indonesia
+        if st.button("Jalankan Text"):
+        
+        language_code = 'id'
+        hasil2 = ts.translate_text(text2, to_language=language_code, translator='google')
+        tts = gTTS(text2=hasil2, lang=language_code)
+        tts.save('output_id.mp3')  # Simpan output sebagai file audio
+        audio_file = open('output_id.mp3', 'rb')
+        audio_bytes = audio_file.read()
+        st.audio(audio_bytes, format='audio/mp3')
+        
         if data_monthly_orders is not None:
             # Plotting line chart
             plt.figure(figsize=(12, 8))
