@@ -8,3 +8,4 @@ matplotlib
 pyttsx3
 gTTS
 translators
+plotly.express 
