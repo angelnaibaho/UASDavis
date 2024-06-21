@@ -98,11 +98,14 @@ if selected == 'Grafik':
             Quantity;
     """
     data_histogram = fetch_data_from_db(query_histogram)
+
+    def text_to_speech(text, language_code):
+    # Kode untuk mengonversi teks ke suara (menggunakan Google Translate atau layanan TTS lainnya)
+    hasil = ts.translate_text(text, to_language=language_code, translator='google')
+    tts = gTTS(text=hasil, lang=language_code)
+    return tts
     
-    st.write("""Grafik di bawah ini menampilkan total penjualan berdasarkan kategori produk dan gender selama periode empat tahun (2001-2004). 
-    Dapat dilihat bahwa kategori produk dengan penjualan tertinggi adalah Accessoris, dengan pria membeli sebanyak 18,233 unit dan wanita sebanyak 17,859 unit. 
-    Di sisi lain, kategori produk dengan penjualan terendah adalah Clothing, dengan pria membeli 7,525 unit dan wanita membeli 7,680 unit. 
-    Perhatian lebih lanjut mungkin perlu diberikan pada kategori produk yang memiliki penjualan terendah untuk meningkatkan performa di masa mendatang.""")
+    text = "Grafik di bawah ini menampilkan total penjualan berdasarkan kategori produk dan gender selama periode empat tahun (2001-2004). Dapat dilihat bahwa kategori produk dengan penjualan tertinggi adalah Accessoris, dengan pria membeli sebanyak 18,233 unit dan wanita sebanyak 17,859 unit. Di sisi lain, kategori produk dengan penjualan terendah adalah Clothing, dengan pria membeli 7,525 unit dan wanita membeli 7,680 unit. Perhatian lebih lanjut mungkin perlu diberikan pada kategori produk yang memiliki penjualan terendah untuk meningkatkan performa di masa mendatang."
 
     # Tambahkan tombol untuk memainkan TTS dalam bahasa Indonesia
     if st.button("Jalankan dengan Indonesia"):
