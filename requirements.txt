@@ -5,3 +5,6 @@ plotly
 mysql-connector-python
 SQLAlchemy
 matplotlib
+pyttsx3
+gTTS
+translators
